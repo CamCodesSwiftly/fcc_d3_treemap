@@ -72,6 +72,32 @@ fetch(
 			.attr("transform", `translate(0,0)`)
 			.call(d3.axisLeft(yScale));
 
+		// * TOOLTIP
+		let tooltip = d3
+			.select("body")
+			.data(root.leaves())
+			.append("div")
+			.attr("id", "tooltip");
+		function handleMouseOver(event, d) {
+			const attributeText = `${d3.select(this).attr("data-value")}`;
+			const visibleText = `${d3.select(this).attr("data-name")} - ${d3
+				.select(this)
+				.attr("data-category")} - Value: ${d3.select(this).attr("data-value")}`;
+			const [x, y] = d3.pointer(event);
+			tooltip
+				.transition()
+				.duration(100)
+				.style("left", x + 0 + "px")
+				.style("top", y + 0 + "px")
+				.style("opacity", 0.8)
+				.style("visibility", "visible")
+				.attr("data-value", attributeText);
+			return tooltip.html(`<p>${visibleText}</p>`);
+		}
+		function handleMouseOut() {
+			tooltip.style("opacity", 0).style("visibility", "hidden");
+		}
+
 		// * PLOT
 		svg.selectAll("rect")
 			.data(root.leaves())
@@ -90,7 +116,9 @@ fetch(
 			.attr("data-category", (d) => d.data.category)
 			.attr("data-value", (d) => {
 				return d.data.value;
-			});
+			})
+			.on("mouseover", handleMouseOver)
+			.on("mouseout", handleMouseOut);
 
 		// LEGEND
 		const legendWidth = 800;
@@ -112,7 +140,7 @@ fetch(
 
 		legendItems
 			.append("rect")
-            .attr("class", "legend-item")
+			.attr("class", "legend-item")
 			.attr("width", 20) // Adjust the width of each legend item
 			.attr("height", 20)
 			.style("fill", (d) => color(d));
