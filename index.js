@@ -7,13 +7,10 @@ let height = 600;
 var svg = d3
 	.select("body")
 	.append("svg")
-	// .attr("width", width + margin.left + margin.right)
-	// .attr("height", height + margin.top + margin.bottom)
 	.attr("width", width)
 	.attr("height", height)
 	.attr("viewBox", [0, 0, width + 100, height + 100])
 	.attr("style", "max-width: 100%; height: auto;");
-// .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 fetch(
 	"https://cdn.freecodecamp.org/testable-projects-fcc/data/tree_map/movie-data.json"
@@ -21,14 +18,10 @@ fetch(
 	.then((response) => response.json())
 	.then((data) => {
 		// Handle data from the first JSON file
-		console.log(data);
 		// * Data Transfer to Cluster Layout
-		let numberOfValues = 0;
 		const root = d3.hierarchy(data).sum((d) => {
 			return d.value;
 		});
-		console.log(root);
-		console.log(d3.max(root.descendants(), (d) => d.value));
 
 		// * Treemap Positioning
 		d3
@@ -38,17 +31,18 @@ fetch(
 			.paddingRight(0)
 			.paddingInner(0)(root);
 		// * Color scale
+		const categories = [
+			"Action",
+			"Adventure",
+			"Comedy",
+			"Drama",
+			"Animation",
+			"Family",
+			"Biography",
+		];
 		const color = d3
 			.scaleOrdinal()
-			.domain([
-				"Action",
-				"Adventure",
-				"Comedy",
-				"Drama",
-				"Animation",
-				"Family",
-				"Biography",
-			])
+			.domain(categories)
 			.range([
 				"#add8e6",
 				"#ffc0cb",
@@ -58,21 +52,6 @@ fetch(
 				"#ff6961",
 				"#afeeee",
 			]);
-		// * Opacity Scale
-		// const opacity = d3.scaleLinear().domain([10, 30]).range([0.5, 1]);
-
-		// * Band AXES
-		// const x = d3.scaleBand().range([0, width]);
-		// const y = d3.scaleBand().range([height, 0]);
-
-		// const x = d3.scaleBand(
-		// 	["a", "b", "c", "d", "e", "f", "g", "h"],
-		// 	[0, width]
-		// );
-		// const y = d3.scaleBand(
-		// 	["a", "b", "c", "d", "e", "f", "g", "h"],
-		// 	[height, 0]
-		// );
 
 		// * Linear AXES
 		const xScale = d3
@@ -93,7 +72,7 @@ fetch(
 			.attr("transform", `translate(0,0)`)
 			.call(d3.axisLeft(yScale));
 
-		// TODO: Plotting with AXES
+		// * PLOT
 		svg.selectAll("rect")
 			.data(root.leaves())
 			.join("rect")
@@ -110,10 +89,40 @@ fetch(
 			.attr("data-name", (d) => d.data.name)
 			.attr("data-category", (d) => d.data.category)
 			.attr("data-value", (d) => {
-				console.log(d.data.value);
 				return d.data.value;
 			});
 
+		// LEGEND
+		const legendWidth = 800;
+		const legendHeight = 50;
+
+		const legendSvg = d3
+			.select("body")
+			.append("svg")
+			.attr("width", legendWidth)
+			.attr("height", legendHeight)
+			.attr("id", "legend");
+
+		const legendItems = legendSvg
+			.selectAll("legendDots")
+			.data(categories)
+			.enter()
+			.append("g")
+			.attr("transform", (d, i) => `translate(${i * 100}, 0)`); // Adjust the spacing between legend items
+
+		legendItems
+			.append("rect")
+            .attr("class", "legend-item")
+			.attr("width", 20) // Adjust the width of each legend item
+			.attr("height", 20)
+			.style("fill", (d) => color(d));
+
+		legendItems
+			.append("text")
+			.attr("x", 25) // Adjust the distance between rect and text
+			.attr("y", 15)
+			.text((d) => d)
+			.attr("font-size", "10px");
 		// ? Console.log area
 	})
 	.catch((error) => {
