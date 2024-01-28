@@ -1,7 +1,7 @@
 // * Size & Margins
 
-let width = 900;
-let height = 600;
+let width = 1200;
+let height = 1600;
 
 // * SVG CANVAS
 var svg = d3
@@ -122,25 +122,35 @@ fetch(
 			.on("mouseover", handleMouseOver)
 			.on("mouseout", handleMouseOut);
 
-		// ! TEXT: about 20 entries are missing for some reason. 
-        // ! Maybe start line breaking first, and see if they appear then?
-        // ! use tspan
+		// ! TEXT: about 20 entries are missing for some reason.
+		// ! Maybe start line breaking first, and see if they appear then?
+		// ! use tspan
 
-		// svg.selectAll("text")
-		// 	.data(root.leaves())
-		// 	.enter()
-		// 	.append("text")
-		// 	.attr("x", (d) => {
-		// 		return d.x0 + 5;
-		// 	}) // +10 to adjust position (more right)
-		// 	.attr("y", (d) => {
-		// 		return d.y0 + 20;
-		// 	}) // +20 to adjust position (lower)
-		// 	.text((d) => {
-		// 		return d.data.name;
-		// 	})
-		// 	.attr("font-size", "10px")
-		// 	.attr("fill", "black");
+		svg.selectAll("vals")
+			.data(root.leaves())
+			.enter()
+			.append("text")
+			.attr("x", (d) => d.x0 + 5) // +10 to adjust position (more right)
+			.attr("y", (d) => d.y0) // +20 to adjust position (lower)
+			.text((d) => console.log(d.data.name.split(" ")))
+			.attr("font-size", "10px")
+			.attr("fill", "black")
+			.each(function (d) {
+				const words = d.data.name.split(/\s+/);
+				const lineHeight = 10; // Adjust as needed
+				d3.select(this)
+					.selectAll("tspan")
+					.data(words)
+					.enter()
+					.append("tspan")
+					.attr(
+						"x",
+						(d) =>
+							d3.select(this)._groups[0][0].x.animVal[0].value + 5
+					)
+					.attr("dy", lineHeight)
+					.text((word) => word);
+			});
 
 		// * LEGEND
 		const legendWidth = 800;
