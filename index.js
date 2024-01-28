@@ -1,16 +1,19 @@
-// TODO: Size & Margins
-let margin = { top: 10, right: 10, bottom: 10, left: 10 },
-	width = 1100 - margin.left - margin.right,
-	height = 890 - margin.top - margin.bottom;
+// * Size & Margins
 
-// TODO: SVG CANVAS
+let width = 900;
+let height = 600;
+
+// * SVG CANVAS
 var svg = d3
 	.select("body")
 	.append("svg")
-	.attr("width", width + margin.left + margin.right)
-	.attr("height", height + margin.top + margin.bottom)
-	.append("g")
-	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+	// .attr("width", width + margin.left + margin.right)
+	// .attr("height", height + margin.top + margin.bottom)
+	.attr("width", width)
+	.attr("height", height)
+	.attr("viewBox", [0, 0, width + 100, height + 100])
+	.attr("style", "max-width: 100%; height: auto;");
+// .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 fetch(
 	"https://cdn.freecodecamp.org/testable-projects-fcc/data/tree_map/movie-data.json"
@@ -18,11 +21,12 @@ fetch(
 	.then((response) => response.json())
 	.then((data) => {
 		// Handle data from the first JSON file
-
+		console.log(data);
 		// * Data Transfer to Cluster Layout
-		const root = d3.hierarchy(data).sum(function (d) {
+		let numberOfValues = 0;
+		const root = d3.hierarchy(data).sum((d) => {
 			if (d.value) {
-				// console.log(d.value);
+				numberOfValues = numberOfValues + 1;
 				return d.value;
 			}
 			return;
@@ -58,7 +62,21 @@ fetch(
 		// * Opacity Scale
 		// const opacity = d3.scaleLinear().domain([10, 30]).range([0.5, 1]);
 
-		// * Plotting
+		// TODO: AXES
+		// const x = d3.scaleBand().range([0, width]);
+		// const y = d3.scaleBand().range([height, 0]);
+
+		const x = d3.scaleBand(["a", "b", "c", "d", "e", "f", "g", "h"], [0, width]);
+		const y = d3.scaleBand(["a", "b", "c", "d", "e", "f", "g", "h"], [height, 0]);
+		svg.append("g")
+			.attr("transform", `translate(0,${height})`)
+			.call(d3.axisBottom(x));
+		svg.append("g")
+			.attr("transform", `translate(0, 0)`)
+			.call(d3.axisLeft(y));
+
+		// TODO: Plotting with AXES
+		let numberOfFills = 0;
 		svg.selectAll("rect")
 			.data(root.leaves())
 			.join("rect")
@@ -68,22 +86,42 @@ fetch(
 			.attr("width", (d) => d.x1 - d.x0)
 			.attr("height", (d) => d.y1 - d.y0)
 			.style("stroke", "black")
-			.style("fill", (d) => color(d.parent.data.name));
+			.style("fill", (d) => {
+				numberOfFills = numberOfFills + 1;
+				return color(d.parent.data.name);
+			});
+		// // * Plotting
+		// svg.selectAll("rect")
+		// 	.data(root.leaves())
+		// 	.join("rect")
+		// 	.attr("value", (d) => d.value)
+		// 	.attr("x", (d) => d.x0)
+		// 	.attr("y", (d) => d.y0)
+		// 	.attr("width", (d) => d.x1 - d.x0)
+		// 	.attr("height", (d) => d.y1 - d.y0)
+		// 	.style("stroke", "black")
+		// 	.style("fill", (d) => color(d.parent.data.name));
 		// .style("opacity", (d) => d.data.value);
 		// !: Tooltips/Labels
+		let numberOfTexts = 0;
 		svg.selectAll("text")
 			.data(root.leaves())
 			.enter()
 			.append("text")
-			.attr("x", (d) => d.x0 + 5)
-			.attr("y", (d) => d.y0 + 20)
+			.attr("x", (d) => d.x0 + 3)
+			.attr("y", (d) => d.y0 + 15)
 			.text((d) => {
-				return d.data.name.replace(" ", "");
+				// console.log(d)
+				numberOfTexts = numberOfTexts + 1;
+				return d.data.name;
 			})
 			.attr("font-size", "9px");
 		// ? Console.log area
-		console.log(data);
-		// console.log(root);
+
+		console.log(root);
+		console.log(numberOfValues);
+		console.log(numberOfFills);
+		console.log(numberOfTexts);
 	})
 	.catch((error) => {
 		// Handle errors
