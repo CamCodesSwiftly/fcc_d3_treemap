@@ -82,7 +82,9 @@ fetch(
 			const attributeText = `${d3.select(this).attr("data-value")}`;
 			const visibleText = `${d3.select(this).attr("data-name")} - ${d3
 				.select(this)
-				.attr("data-category")} - Value: ${d3.select(this).attr("data-value")}`;
+				.attr("data-category")} - Value: ${d3
+				.select(this)
+				.attr("data-value")}`;
 			const [x, y] = d3.pointer(event);
 			tooltip
 				.transition()
@@ -120,7 +122,27 @@ fetch(
 			.on("mouseover", handleMouseOver)
 			.on("mouseout", handleMouseOut);
 
-		// LEGEND
+		// ! TEXT: about 20 entries are missing for some reason. 
+        // ! Maybe start line breaking first, and see if they appear then?
+        // ! use tspan
+
+		// svg.selectAll("text")
+		// 	.data(root.leaves())
+		// 	.enter()
+		// 	.append("text")
+		// 	.attr("x", (d) => {
+		// 		return d.x0 + 5;
+		// 	}) // +10 to adjust position (more right)
+		// 	.attr("y", (d) => {
+		// 		return d.y0 + 20;
+		// 	}) // +20 to adjust position (lower)
+		// 	.text((d) => {
+		// 		return d.data.name;
+		// 	})
+		// 	.attr("font-size", "10px")
+		// 	.attr("fill", "black");
+
+		// * LEGEND
 		const legendWidth = 800;
 		const legendHeight = 50;
 
