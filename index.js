@@ -25,19 +25,18 @@ fetch(
 		// * Data Transfer to Cluster Layout
 		let numberOfValues = 0;
 		const root = d3.hierarchy(data).sum((d) => {
-			if (d.value) {
-				numberOfValues = numberOfValues + 1;
-				return d.value;
-			}
-			return;
+			return d.value;
 		});
+		console.log(root);
+		console.log(d3.max(root.descendants(), (d) => d.value));
+
 		// * Treemap Positioning
 		d3
 			.treemap()
 			.size([width, height])
 			.paddingTop(0)
-			.paddingRight(3)
-			.paddingInner(3)(root);
+			.paddingRight(0)
+			.paddingInner(0)(root);
 		// * Color scale
 		const color = d3
 			.scaleOrdinal()
@@ -62,66 +61,60 @@ fetch(
 		// * Opacity Scale
 		// const opacity = d3.scaleLinear().domain([10, 30]).range([0.5, 1]);
 
-		// TODO: AXES
+		// * Band AXES
 		// const x = d3.scaleBand().range([0, width]);
 		// const y = d3.scaleBand().range([height, 0]);
 
-		const x = d3.scaleBand(["a", "b", "c", "d", "e", "f", "g", "h"], [0, width]);
-		const y = d3.scaleBand(["a", "b", "c", "d", "e", "f", "g", "h"], [height, 0]);
+		// const x = d3.scaleBand(
+		// 	["a", "b", "c", "d", "e", "f", "g", "h"],
+		// 	[0, width]
+		// );
+		// const y = d3.scaleBand(
+		// 	["a", "b", "c", "d", "e", "f", "g", "h"],
+		// 	[height, 0]
+		// );
+
+		// * Linear AXES
+		const xScale = d3
+			.scaleLinear()
+			.domain([0, width]) // Input data domain
+			.range([0, width]); // Output range (width of the SVG)
+
 		svg.append("g")
 			.attr("transform", `translate(0,${height})`)
-			.call(d3.axisBottom(x));
+			.call(d3.axisBottom(xScale));
+
+		const yScale = d3
+			.scaleLinear()
+			.domain([0, height]) // Input data domain
+			.range([height, 0]); // Output range (width of the SVG)
+
 		svg.append("g")
-			.attr("transform", `translate(0, 0)`)
-			.call(d3.axisLeft(y));
+			.attr("transform", `translate(0,0)`)
+			.call(d3.axisLeft(yScale));
 
 		// TODO: Plotting with AXES
-		let numberOfFills = 0;
 		svg.selectAll("rect")
 			.data(root.leaves())
 			.join("rect")
-			.attr("value", (d) => d.value)
 			.attr("x", (d) => d.x0)
 			.attr("y", (d) => d.y0)
 			.attr("width", (d) => d.x1 - d.x0)
 			.attr("height", (d) => d.y1 - d.y0)
 			.style("stroke", "black")
 			.style("fill", (d) => {
-				numberOfFills = numberOfFills + 1;
 				return color(d.parent.data.name);
-			});
-		// // * Plotting
-		// svg.selectAll("rect")
-		// 	.data(root.leaves())
-		// 	.join("rect")
-		// 	.attr("value", (d) => d.value)
-		// 	.attr("x", (d) => d.x0)
-		// 	.attr("y", (d) => d.y0)
-		// 	.attr("width", (d) => d.x1 - d.x0)
-		// 	.attr("height", (d) => d.y1 - d.y0)
-		// 	.style("stroke", "black")
-		// 	.style("fill", (d) => color(d.parent.data.name));
-		// .style("opacity", (d) => d.data.value);
-		// !: Tooltips/Labels
-		let numberOfTexts = 0;
-		svg.selectAll("text")
-			.data(root.leaves())
-			.enter()
-			.append("text")
-			.attr("x", (d) => d.x0 + 3)
-			.attr("y", (d) => d.y0 + 15)
-			.text((d) => {
-				// console.log(d)
-				numberOfTexts = numberOfTexts + 1;
-				return d.data.name;
 			})
-			.attr("font-size", "9px");
-		// ? Console.log area
+			.attr("class", "tile")
+			.text((d) => d.data)
+			.attr("data-name", (d) => d.data.name)
+			.attr("data-category", (d) => d.data.category)
+			.attr("data-value", (d) => {
+				console.log(d.data.value);
+				return d.data.value;
+			});
 
-		console.log(root);
-		console.log(numberOfValues);
-		console.log(numberOfFills);
-		console.log(numberOfTexts);
+		// ? Console.log area
 	})
 	.catch((error) => {
 		// Handle errors
